@@ -1,5 +1,5 @@
 /* eslint-disable no-case-declarations */
-import { Elysia, type Context } from '@huyooo/elysia'
+import type { Middleware } from 'tirne'
 
 type Origin = string | RegExp | ((request: Request) => boolean | void)
 
@@ -43,12 +43,6 @@ type MaybeArray<T> = T | T[]
 
 interface CORSConfig {
 	/**
-	 * Disable AOT (Ahead of Time) compilation for plugin instance
-	 *
-	 * @default true
-	 */
-	aot?: boolean
-	/**
 	 * @default `true`
 	 *
 	 * Assign the **Access-Control-Allow-Origin** header.
@@ -61,16 +55,16 @@ interface CORSConfig {
 	 * - `RegExp` - Pattern to use to test with request's url, will accept origin if matched.
 	 *
 	 * - `Function` - Custom logic to validate origin acceptance or not. will accept origin if `true` is returned.
-	 *   - Function will accepts `Context` just like `Handler`
+	 *   - Function will accepts `Request` as parameter
 	 *
 	 *   ```typescript
 	 *   // ? Example usage
-	 *   app.use(cors, {
-	 *      origin: ({ request, headers }) => true
+	 *   const corsMiddleware = cors({
+	 *      origin: (request) => true
 	 *   })
 	 *
 	 *   // Type Definition
-	 *   type CORSOriginFn = (context: Context) => boolean | void
+	 *   type CORSOriginFn = (request: Request) => boolean | void
 	 *   ```
 	 *
 	 * - `Array<string | RegExp | Function>` - Will try to find truthy value of all options above. Will accept request if one is `true`.
@@ -167,13 +161,16 @@ const isBun = typeof new Headers()?.toJSON === 'function'
  * This function is use when headers config is true.
  * Attempts to process headers based on request headers.
  */
-const processHeaders = (headers: Headers) => {
-	if (isBun) return Object.keys(headers.toJSON()).join(', ')
+const processHeaders = (headers: any) => {
+	// Check if toJSON method exists (Bun specific)
+	if ('toJSON' in headers && typeof headers.toJSON === 'function') {
+		return Object.keys(headers.toJSON()).join(', ')
+	}
 
 	let keys = ''
 
 	let i = 0
-	headers.forEach((_, key) => {
+	headers.forEach((_: any, key: string) => {
 		if (i) keys = keys + ', ' + key
 		else keys = key
 
@@ -183,9 +180,8 @@ const processHeaders = (headers: Headers) => {
 	return keys
 }
 
-export const cors = (config?: CORSConfig) => {
+export const cors = (config?: CORSConfig): Middleware => {
 	let {
-		aot = true,
 		origin = true,
 		methods = true,
 		allowedHeaders = true,
@@ -206,12 +202,6 @@ export const cors = (config?: CORSConfig) => {
 			: Array.isArray(origin)
 			? origin
 			: [origin]
-
-	const app = new Elysia({
-		name: '@huyooo/elysia-cors',
-		seed: config,
-		aot
-	})
 
 	const anyOrigin = origins?.some((o) => o === '*')
 
@@ -247,19 +237,21 @@ export const cors = (config?: CORSConfig) => {
 		return false
 	}
 
-	const handleOrigin = (set: Context['set'], request: Request) => {
+	const handleOrigin = (response: Response, request: Request) => {
 		// origin === `true` means any origin
 		if (origin === true) {
-			set.headers.vary = '*'
-			set.headers['access-control-allow-origin'] =
+			response.headers.set('vary', '*')
+			response.headers.set(
+				'access-control-allow-origin',
 				request.headers.get('Origin') || '*'
+			)
 
 			return
 		}
 
 		if (anyOrigin) {
-			set.headers.vary = '*'
-			set.headers['access-control-allow-origin'] = '*'
+			response.headers.set('vary', '*')
+			response.headers.set('access-control-allow-origin', '*')
 
 			return
 		}
@@ -273,88 +265,139 @@ export const cors = (config?: CORSConfig) => {
 			for (let i = 0; i < origins.length; i++) {
 				const value = processOrigin(origins[i]!, request, from)
 				if (value === true) {
-					set.headers.vary = origin ? 'Origin' : '*'
-					set.headers['access-control-allow-origin'] = from || '*'
+					response.headers.set('vary', origin ? 'Origin' : '*')
+					response.headers.set(
+						'access-control-allow-origin',
+						from || '*'
+					)
 
 					return
 				}
 			}
 		}
 
-		set.headers.vary = 'Origin'
+		response.headers.set('vary', 'Origin')
 		if (headers.length)
-			set.headers['access-control-allow-origin'] = headers.join(', ')
+			response.headers.set(
+				'access-control-allow-origin',
+				headers.join(', ')
+			)
 	}
 
-	const handleMethod = (set: Context['set'], method?: string | null) => {
+	const handleMethod = (response: Response, method?: string | null) => {
 		if (!method) return
 
 		if (methods === true)
-			return (set.headers['access-control-allow-methods'] = method ?? '*')
+			return response.headers.set(
+				'access-control-allow-methods',
+				method ?? '*'
+			)
 
 		if (methods === false || !methods?.length) return
 
 		if (methods === '*')
-			return (set.headers['access-control-allow-methods'] = '*')
+			return response.headers.set('access-control-allow-methods', '*')
 
 		if (!Array.isArray(methods))
-			return (set.headers['access-control-allow-methods'] = methods)
+			return response.headers.set('access-control-allow-methods', methods)
 
-		set.headers['access-control-allow-methods'] = methods.join(', ')
+		response.headers.set('access-control-allow-methods', methods.join(', '))
 	}
 
-	const defaultHeaders: Record<string, string> = {}
+	const setDefaultHeaders = (response: Response) => {
+		if (typeof exposeHeaders === 'string')
+			response.headers.set('access-control-expose-headers', exposeHeaders)
 
-	if (typeof exposeHeaders === 'string')
-		defaultHeaders['access-control-expose-headers'] = exposeHeaders
+		if (typeof allowedHeaders === 'string')
+			response.headers.set('access-control-allow-headers', allowedHeaders)
 
-	if (typeof allowedHeaders === 'string')
-		// @ts-ignore
-		defaultHeaders['access-control-allow-headers'] = allowedHeaders
+		if (credentials === true)
+			response.headers.set('access-control-allow-credentials', 'true')
+	}
 
-	if (credentials === true)
-		defaultHeaders['access-control-allow-credentials'] = 'true'
+	const handlePreflight = async (request: Request): Promise<Response> => {
+		const response = new Response(null, { status: 204 })
 
-	app.headers(defaultHeaders)
-
-	function handleOption({ set, request, headers }: Context) {
-		handleOrigin(set as any, request)
-		handleMethod(set, request.headers.get('access-control-request-method'))
+		handleOrigin(response, request)
+		handleMethod(
+			response,
+			request.headers.get('access-control-request-method')
+		)
 
 		if (allowedHeaders === true || exposeHeaders === true) {
 			if (allowedHeaders === true)
-				set.headers['access-control-allow-headers'] =
-					headers['access-control-request-headers']
+				response.headers.set(
+					'access-control-allow-headers',
+					request.headers.get('access-control-request-headers') || ''
+				)
 
 			if (exposeHeaders === true)
-				set.headers['access-control-expose-headers'] =
-					Object.keys(headers).join(',')
+				response.headers.set(
+					'access-control-expose-headers',
+					processHeaders(request.headers)
+				)
 		}
 
-		if (maxAge) set.headers['access-control-max-age'] = maxAge.toString()
+		if (maxAge)
+			response.headers.set('access-control-max-age', maxAge.toString())
 
-		return new Response(null, {
-			status: 204
-		})
+		return response
 	}
 
-	if (preflight) app.options('/', handleOption).options('/*', handleOption)
+	return async (request: Request, next: () => Promise<Response>) => {
+		// Handle preflight requests
+		if (preflight && request.method === 'OPTIONS') {
+			const response = new Response(null, { status: 204 })
 
-	return app.onRequest(function processCors({ set, request }) {
-		handleOrigin(set, request)
-		handleMethod(set, request.method)
+			handleOrigin(response, request)
+			handleMethod(
+				response,
+				request.headers.get('access-control-request-method')
+			)
+
+			if (allowedHeaders === true || exposeHeaders === true) {
+				if (allowedHeaders === true)
+					response.headers.set(
+						'access-control-allow-headers',
+						request.headers.get('access-control-request-headers') ||
+							''
+					)
+
+				if (exposeHeaders === true)
+					response.headers.set(
+						'access-control-expose-headers',
+						processHeaders(request.headers)
+					)
+			}
+
+			if (maxAge)
+				response.headers.set(
+					'access-control-max-age',
+					maxAge.toString()
+				)
+
+			return response
+		}
+
+		// Process CORS for actual requests
+		const response = await next()
+
+		handleOrigin(response, request)
+		handleMethod(response, request.method)
+		setDefaultHeaders(response)
 
 		if (allowedHeaders === true || exposeHeaders === true) {
-			// @ts-ignore
 			const headers = processHeaders(request.headers)
 
 			if (allowedHeaders === true)
-				set.headers['access-control-allow-headers'] = headers
+				response.headers.set('access-control-allow-headers', headers)
 
 			if (exposeHeaders === true)
-				set.headers['access-control-expose-headers'] = headers
+				response.headers.set('access-control-expose-headers', headers)
 		}
-	})
+
+		return response
+	}
 }
 
 export default cors

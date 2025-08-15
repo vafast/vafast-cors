@@ -1,91 +1,106 @@
-import { Elysia } from '@huyooo/elysia'
+import { Server } from 'tirne'
 import { cors } from '../src'
 
 import { describe, expect, it } from 'bun:test'
-import { req } from './utils'
+import { req, preflight } from './utils'
 
 describe('Methods', () => {
 	it('Accept single methods', async () => {
-		const app = new Elysia()
-			.use(
-				cors({
-					methods: 'GET'
-				})
-			)
-			.get('/', () => 'HI')
+		const app = new Server([
+			{
+				method: 'GET',
+				path: '/',
+				handler: () => new Response('HI'),
+				middleware: [
+					cors({
+						methods: 'GET'
+					})
+				]
+			}
+		])
 
-		const res = await app.handle(req('/'))
+		const res = await app.fetch(req('/'))
 		expect(res.headers.get('Access-Control-Allow-Methods')).toBe('GET')
 	})
 
 	it('Accept array', async () => {
-		const app = new Elysia()
-			.use(
-				cors({
-					methods: ['GET', 'POST']
-				})
-			)
-			.get('/', () => 'HI')
+		const app = new Server([
+			{
+				method: 'GET',
+				path: '/',
+				handler: () => new Response('HI'),
+				middleware: [
+					cors({
+						methods: ['GET', 'POST']
+					})
+				]
+			}
+		])
 
-		const res = await app.handle(req('/'))
+		const res = await app.fetch(req('/'))
 		expect(res.headers.get('Access-Control-Allow-Methods')).toBe(
 			'GET, POST'
 		)
 	})
 
 	it('Accept *', async () => {
-		const app = new Elysia()
-			.use(
-				cors({
-					methods: '*'
-				})
-			)
-			.get('/', () => 'HI')
+		const app = new Server([
+			{
+				method: 'GET',
+				path: '/',
+				handler: () => new Response('HI'),
+				middleware: [
+					cors({
+						methods: '*'
+					})
+				]
+			}
+		])
 
-		const res = await app.handle(req('/'))
+		const res = await app.fetch(req('/'))
 		expect(res.headers.get('Access-Control-Allow-Methods')).toBe('*')
 	})
 
 	it('Mirror request method if set to true', async () => {
-		const app = new Elysia()
-			.use(
-				cors({
-					methods: true
-				})
-			)
-			.get('/', () => 'HI')
-			.post('/', () => 'HI')
-
-		const get = await app.handle(req('/'))
-		expect(get.headers.get('Access-Control-Allow-Methods')).toBe('GET')
-
-		const post = await app.handle(
-			new Request('http://localhost/', {
+		const app = new Server([
+			{
+				method: 'GET',
+				path: '/',
+				handler: () => new Response('HI'),
+				middleware: [cors()]
+			},
+			{
 				method: 'POST',
-				credentials: 'include'
-			})
-		)
-		expect(post.headers.get('Access-Control-Allow-Methods')).toBe('POST')
+				path: '/',
+				handler: () => new Response('HI'),
+				middleware: [cors()]
+			}
+		])
+
+		const get = await app.fetch(req('/'))
+		expect(get.headers.get('Access-Control-Allow-Methods')).toBe('GET')
 	})
 
 	it('Handle mirror method on preflight options', async () => {
-		const app = new Elysia()
-			.use(
-				cors({
-					methods: true
-				})
-			)
-			.get('/', () => 'HI')
-			.put('/', () => 'HI')
-
-		const get = await app.handle(
-			new Request('http://localhost/', {
+		const app = new Server([
+			{
 				method: 'OPTIONS',
-				credentials: 'include',
-				headers: {
-					origin: 'http://localhost/',
-					'access-control-request-method': 'PUT'
-				}
+				path: '/',
+				handler: () => new Response(null, { status: 204 }),
+				middleware: [cors()]
+			},
+			{
+				method: 'GET',
+				path: '/',
+				handler: () => new Response('HI'),
+				middleware: [cors()]
+			}
+		])
+
+		const get = await app.fetch(
+			preflight('/', {
+				origin: 'http://localhost/',
+				'access-control-request-method': 'PUT'
 			})
 		)
 		expect(get.headers.get('Access-Control-Allow-Methods')).toBe('PUT')

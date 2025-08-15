@@ -1,4 +1,4 @@
-import { Elysia } from '@huyooo/elysia'
+import { Server } from 'tirne'
 import { cors } from '../src'
 
 import { describe, expect, it } from 'bun:test'
@@ -6,28 +6,38 @@ import { req } from './utils'
 
 describe('Credentials', () => {
 	it('Allow credential', async () => {
-		const app = new Elysia()
-			.use(
-				cors({
-					credentials: true
-				})
-			)
-			.get('/', () => 'HI')
+		const app = new Server([
+			{
+				method: 'GET',
+				path: '/',
+				handler: () => new Response('HI'),
+				middleware: [
+					cors({
+						credentials: true
+					})
+				]
+			}
+		])
 
-		const res = await app.handle(req('/'))
+		const res = await app.fetch(req('/'))
 		expect(res.headers.get('Access-Control-Allow-Credentials')).toBe('true')
 	})
 
 	it('Disallow credential', async () => {
-		const app = new Elysia()
-			.use(
-				cors({
-					credentials: false
-				})
-			)
-			.get('/', () => 'HI')
+		const app = new Server([
+			{
+				method: 'GET',
+				path: '/',
+				handler: () => new Response('HI'),
+				middleware: [
+					cors({
+						credentials: false
+					})
+				]
+			}
+		])
 
-		const res = await app.handle(req('/'))
-		expect(res.headers.get('Access-Control-Allow-Credentials')).toBe(null)
+		const res = await app.fetch(req('/'))
+		expect(res.headers.has('access-control-allow-credentials')).toBeFalse()
 	})
 })

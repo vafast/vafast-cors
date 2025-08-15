@@ -1,4 +1,4 @@
-import { Elysia } from "elysia";
+import { Server } from "tirne";
 import { cors } from "../src";
 
 import { describe, expect, it } from "bun:test";
@@ -6,9 +6,16 @@ import { req } from "./utils";
 
 describe("CORS", () => {
     it("Accept all CORS by default", async () => {
-        const app = new Elysia().use(cors()).get("/", () => "HI");
+        const app = new Server([
+            {
+                method: "GET",
+                path: "/",
+                handler: () => new Response("HI"),
+                middleware: [cors()]
+            }
+        ]);
 
-        const res = await app.handle(
+        const res = await app.fetch(
             req("/", {
                 origin: "https://saltyaom.com",
             }),

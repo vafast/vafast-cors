@@ -1,4 +1,4 @@
-import { Elysia } from '@huyooo/elysia'
+import { Server } from 'tirne'
 import { cors } from '../src'
 
 import { describe, expect, it } from 'bun:test'
@@ -6,13 +6,18 @@ import { req } from './utils'
 
 describe('Origin', () => {
 	it('Accept string', async () => {
-		const app = new Elysia()
-			.use(
-				cors({
-					origin: 'saltyaom.com'
-				})
-			)
-			.get('/', () => 'A')
+		const app = new Server([
+			{
+				method: 'GET',
+				path: '/',
+				handler: () => new Response('A'),
+				middleware: [
+					cors({
+						origin: 'https://saltyaom.com'
+					})
+				]
+			}
+		])
 
 		const res = await app.fetch(
 			new Request('http://localhost/', {
@@ -28,33 +33,43 @@ describe('Origin', () => {
 	})
 
 	it('Accept boolean', async () => {
-		const app = new Elysia()
-			.use(
-				cors({
-					origin: true
-				})
-			)
-			.get('/', () => 'HI')
+		const app = new Server([
+			{
+				method: 'GET',
+				path: '/',
+				handler: () => new Response('HI'),
+				middleware: [
+					cors({
+						origin: true
+					})
+				]
+			}
+		])
 
-		const res = await app.handle(req('/'))
+		const res = await app.fetch(req('/'))
 		expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*')
 	})
 
 	it('Accept RegExp', async () => {
-		const app = new Elysia()
-			.use(
-				cors({
-					origin: /\.com/g
-				})
-			)
-			.get('/', () => 'HI')
+		const app = new Server([
+			{
+				method: 'GET',
+				path: '/',
+				handler: () => new Response('HI'),
+				middleware: [
+					cors({
+						origin: /\.com/g
+					})
+				]
+			}
+		])
 
-		const notAllowed = await app.handle(
+		const notAllowed = await app.fetch(
 			req('/', {
 				Origin: 'https://example.org'
 			})
 		)
-		const allowed = await app.handle(
+		const allowed = await app.fetch(
 			req('/', {
 				Origin: 'https://example.com'
 			})
@@ -66,15 +81,20 @@ describe('Origin', () => {
 	})
 
 	it('Accept Function', async () => {
-		const app = new Elysia()
-			.use(
-				cors({
-					origin: () => true
-				})
-			)
-			.get('/', () => 'HI')
+		const app = new Server([
+			{
+				method: 'GET',
+				path: '/',
+				handler: () => new Response('HI'),
+				middleware: [
+					cors({
+						origin: () => true
+					})
+				]
+			}
+		])
 
-		const res = await app.handle(
+		const res = await app.fetch(
 			req('/', {
 				Origin: 'https://example.com'
 			})
@@ -85,13 +105,18 @@ describe('Origin', () => {
 	})
 
 	it('Accept string[]', async () => {
-		const app = new Elysia()
-			.use(
-				cors({
-					origin: ['gehenna.sh', 'saltyaom.com']
-				})
-			)
-			.get('/', () => 'A')
+		const app = new Server([
+			{
+				method: 'GET',
+				path: '/',
+				handler: () => new Response('A'),
+				middleware: [
+					cors({
+						origin: ['gehenna.sh', 'saltyaom.com']
+					})
+				]
+			}
+		])
 
 		const res = await app.fetch(
 			new Request('http://localhost/', {
@@ -107,71 +132,84 @@ describe('Origin', () => {
 	})
 
 	it('Accept Function[]', async () => {
-		const app = new Elysia()
-			.use(
-				cors({
-					origin: ['https://demo.app', () => false, /.com/g]
-				})
-			)
-			.get('/', () => 'HI')
+		const app = new Server([
+			{
+				method: 'GET',
+				path: '/',
+				handler: () => new Response('HI'),
+				middleware: [
+					cors({
+						origin: ['https://demo.app', () => false, /.com/g]
+					})
+				]
+			}
+		])
 
-		const res = await app.handle(
+		const res = await app.fetch(
 			req('/', {
-				Origin: 'https://example.com'
+				Origin: 'https://saltyaom.com'
 			})
 		)
 		expect(res.headers.get('Access-Control-Allow-Origin')).toBe(
-			'https://example.com'
+			'https://saltyaom.com'
 		)
 	})
 
 	it('strictly check origin not using sub includes', async () => {
-		const app = new Elysia()
-			.use(
-				cors({
-					origin: 'example.com'
-				})
-			)
-			.post('/', ({ body }) => body)
+		const app = new Server([
+			{
+				method: 'GET',
+				path: '/',
+				handler: () => new Response('HI'),
+				middleware: [
+					cors({
+						origin: 'https://example.com'
+					})
+				]
+			}
+		])
 
-		const response = await app.handle(
-			new Request('http://localhost/awd', {
-				headers: {
-					origin: 'http://notexample.com'
-				}
+		const notAllowed = await app.fetch(
+			req('/', {
+				Origin: 'https://sub.example.com'
 			})
 		)
-
-		expect(response.headers.has('access-control-allow-origin')).toBeFalse()
+		const allowed = await app.fetch(
+			req('/', {
+				Origin: 'https://example.com'
+			})
+		)
+		expect(notAllowed.headers.get('Access-Control-Allow-Origin')).toBe(null)
+		expect(allowed.headers.get('Access-Control-Allow-Origin')).toBe(
+			'https://example.com'
+		)
 	})
 
 	it('strictly check protocol', async () => {
-		const app = new Elysia()
-			.use(
-				cors({
-					origin: 'http://example.com'
-				})
-			)
-			.post('/', ({ body }) => body)
+		const app = new Server([
+			{
+				method: 'GET',
+				path: '/',
+				handler: () => new Response('HI'),
+				middleware: [
+					cors({
+						origin: 'http://example.com'
+					})
+				]
+			}
+		])
 
-		const pass = await app.handle(
-			new Request('http://localhost/awd', {
-				headers: {
-					origin: 'http://example.com'
-				}
+		const notAllowed = await app.fetch(
+			req('/', {
+				Origin: 'https://example.com'
 			})
 		)
-
+		const pass = await app.fetch(
+			req('/', {
+				Origin: 'http://example.com'
+			})
+		)
+		expect(notAllowed.headers.has('access-control-allow-origin')).toBeFalse()
 		expect(pass.headers.has('access-control-allow-origin')).toBeTrue()
-
-		const fail = await app.handle(
-			new Request('http://localhost/awd', {
-				headers: {
-					origin: 'https://example.com'
-				}
-			})
-		)
-
-		expect(fail.headers.has('access-control-allow-origin')).toBeFalse()
 	})
 })

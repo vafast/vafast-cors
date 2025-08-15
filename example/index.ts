@@ -1,15 +1,20 @@
-import { Elysia, t } from '@huyooo/elysia'
+import { Server } from 'tirne'
 import { cors } from '../src/index'
 
-const app = new Elysia()
-	.use(
-		cors({
-			origin: 'http://example.com'
-		})
-	)
-	.post('/', ({ body }) => body)
+const app = new Server([
+	{
+		method: 'POST',
+		path: '/',
+		handler: ({ body }) => new Response(body),
+		middleware: [
+			cors({
+				origin: 'http://example.com'
+			})
+		]
+	}
+])
 
-app.handle(
+app.fetch(
 	new Request('http://localhost/awd', {
 		headers: {
 			origin: 'https://example.com',
@@ -18,5 +23,5 @@ app.handle(
 		}
 	})
 )
-	.then((x) => x.headers.toJSON())
+	.then((x) => x.headers)
 	.then(console.log)
