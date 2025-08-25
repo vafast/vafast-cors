@@ -39,10 +39,13 @@
 		"@typescript-eslint/eslint-plugin": "^7.9.0",
 		"@typescript-eslint/parser": "^7.9.0",
 		"eslint": "^9.2.0",
-		"tirne": "^0.1.16",
+		"vafast": "^0.1.12",
 		"typescript": "^5.4.5"
 	},
 	"peerDependencies": {
-		"tirne": ">= 0.1.16"
+		"vafast": ">= 0.1.12"
+	},
+	"dependencies": {
+		"vafast": "^0.1.13"
 	}
 }

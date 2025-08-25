@@ -1,4 +1,4 @@
-import { Server } from 'tirne'
+import { Server, createRouteHandler } from 'vafast'
 import { cors } from '../src'
 
 import { describe, expect, it } from 'bun:test'
@@ -10,7 +10,9 @@ describe('Origin', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: () => new Response('A'),
+				handler: createRouteHandler(() => {
+					return 'A'
+				}),
 				middleware: [
 					cors({
 						origin: 'https://saltyaom.com'
@@ -37,7 +39,9 @@ describe('Origin', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: () => new Response('HI'),
+				handler: createRouteHandler(() => {
+					return 'HI'
+				}),
 				middleware: [
 					cors({
 						origin: true
@@ -55,7 +59,9 @@ describe('Origin', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: () => new Response('HI'),
+				handler: createRouteHandler(() => {
+					return 'HI'
+				}),
 				middleware: [
 					cors({
 						origin: /\.com/g
@@ -85,7 +91,9 @@ describe('Origin', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: () => new Response('HI'),
+				handler: createRouteHandler(() => {
+					return 'HI'
+				}),
 				middleware: [
 					cors({
 						origin: () => true
@@ -109,7 +117,9 @@ describe('Origin', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: () => new Response('A'),
+				handler: createRouteHandler(() => {
+					return 'A'
+				}),
 				middleware: [
 					cors({
 						origin: ['gehenna.sh', 'saltyaom.com']
@@ -136,7 +146,9 @@ describe('Origin', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: () => new Response('HI'),
+				handler: createRouteHandler(() => {
+					return 'HI'
+				}),
 				middleware: [
 					cors({
 						origin: ['https://demo.app', () => false, /.com/g]
@@ -160,7 +172,9 @@ describe('Origin', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: () => new Response('HI'),
+				handler: createRouteHandler(() => {
+					return 'HI'
+				}),
 				middleware: [
 					cors({
 						origin: 'https://example.com'
@@ -190,7 +204,9 @@ describe('Origin', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: () => new Response('HI'),
+				handler: createRouteHandler(() => {
+					return 'HI'
+				}),
 				middleware: [
 					cors({
 						origin: 'http://example.com'

@@ -1,4 +1,4 @@
-import { Server } from 'tirne'
+import { Server, createRouteHandler } from 'vafast'
 import { cors } from '../src'
 
 import { describe, expect, it } from 'bun:test'
@@ -10,7 +10,11 @@ describe('Preflight', () => {
 			{
 				method: 'OPTIONS',
 				path: '/',
-				handler: () => new Response(null, { status: 204 }),
+				handler: createRouteHandler(() => {
+					return {
+						status: 204
+					}
+				}),
 				middleware: [
 					cors({
 						preflight: true
@@ -20,7 +24,9 @@ describe('Preflight', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: () => new Response('HI'),
+				handler: createRouteHandler(() => {
+					return 'HI'
+				}),
 				middleware: [
 					cors({
 						preflight: true
@@ -38,7 +44,11 @@ describe('Preflight', () => {
 			{
 				method: 'OPTIONS',
 				path: '/nested/deep',
-				handler: () => new Response(null, { status: 204 }),
+				handler: createRouteHandler(() => {
+					return {
+						status: 204
+					}
+				}),
 				middleware: [
 					cors({
 						preflight: true
@@ -48,7 +58,9 @@ describe('Preflight', () => {
 			{
 				method: 'GET',
 				path: '/nested/deep',
-				handler: () => new Response('HI'),
+				handler: createRouteHandler(() => {
+					return 'HI'
+				}),
 				middleware: [
 					cors({
 						preflight: true
@@ -66,7 +78,9 @@ describe('Preflight', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: () => new Response('HI'),
+				handler: createRouteHandler(() => {
+					return 'HI'
+				}),
 				middleware: [
 					cors({
 						preflight: false
@@ -76,6 +90,6 @@ describe('Preflight', () => {
 		])
 
 		const res = await app.fetch(preflight('/'))
-		expect(res.status).toBe(404)
+		expect(res.status).toBe(405)
 	})
 })

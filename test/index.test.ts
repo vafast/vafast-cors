@@ -1,4 +1,4 @@
-import { Server } from "tirne";
+import { Server, createRouteHandler } from "vafast";
 import { cors } from "../src";
 
 import { describe, expect, it } from "bun:test";
@@ -10,7 +10,9 @@ describe("CORS", () => {
             {
                 method: "GET",
                 path: "/",
-                handler: () => new Response("HI"),
+                handler: createRouteHandler(() => {
+                    return "HI"
+                }),
                 middleware: [cors()]
             }
         ]);

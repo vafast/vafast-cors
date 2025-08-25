@@ -1,4 +1,4 @@
-import { Server } from 'tirne'
+import { Server, createRouteHandler } from 'vafast'
 import { cors } from '../src'
 
 import { describe, expect, it } from 'bun:test'
@@ -10,7 +10,9 @@ describe('Methods', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: () => new Response('HI'),
+				handler: createRouteHandler(() => {
+					return 'HI'
+				}),
 				middleware: [
 					cors({
 						methods: 'GET'
@@ -28,7 +30,9 @@ describe('Methods', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: () => new Response('HI'),
+				handler: createRouteHandler(() => {
+					return 'HI'
+				}),
 				middleware: [
 					cors({
 						methods: ['GET', 'POST']
@@ -48,7 +52,9 @@ describe('Methods', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: () => new Response('HI'),
+				handler: createRouteHandler(() => {
+					return 'HI'
+				}),
 				middleware: [
 					cors({
 						methods: '*'
@@ -66,13 +72,17 @@ describe('Methods', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: () => new Response('HI'),
+				handler: createRouteHandler(() => {
+					return 'HI'
+				}),
 				middleware: [cors()]
 			},
 			{
 				method: 'POST',
 				path: '/',
-				handler: () => new Response('HI'),
+				handler: createRouteHandler(() => {
+					return 'HI'
+				}),
 				middleware: [cors()]
 			}
 		])
@@ -86,13 +96,19 @@ describe('Methods', () => {
 			{
 				method: 'OPTIONS',
 				path: '/',
-				handler: () => new Response(null, { status: 204 }),
+				handler: createRouteHandler(() => {
+					return {
+						status: 204
+					}
+				}),
 				middleware: [cors()]
 			},
 			{
 				method: 'GET',
 				path: '/',
-				handler: () => new Response('HI'),
+				handler: createRouteHandler(() => {
+					return 'HI'
+				}),
 				middleware: [cors()]
 			}
 		])

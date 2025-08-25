@@ -1,5 +1,5 @@
 /* eslint-disable no-case-declarations */
-import type { Middleware } from 'tirne'
+import type { Middleware } from 'vafast'
 
 type Origin = string | RegExp | ((request: Request) => boolean | void)
 

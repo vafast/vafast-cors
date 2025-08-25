@@ -1,4 +1,4 @@
-import { Server } from 'tirne'
+import { Server, createRouteHandler } from 'vafast'
 import { cors } from '../src'
 
 import { describe, expect, it } from 'bun:test'
@@ -10,7 +10,11 @@ describe('Max Age', () => {
 			{
 				method: 'OPTIONS',
 				path: '/',
-				handler: () => new Response(null, { status: 204 }),
+				handler: createRouteHandler(() => {
+					return {
+						status: 204
+					}
+				}),
 				middleware: [
 					cors({
 						maxAge: 5
@@ -20,7 +24,9 @@ describe('Max Age', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: () => new Response('HI'),
+				handler: createRouteHandler(() => {
+					return 'HI'
+				}),
 				middleware: [
 					cors({
 						maxAge: 5
@@ -38,7 +44,11 @@ describe('Max Age', () => {
 			{
 				method: 'OPTIONS',
 				path: '/',
-				handler: () => new Response(null, { status: 204 }),
+				handler: createRouteHandler(() => {
+					return {
+						status: 204
+					}
+				}),
 				middleware: [
 					cors({
 						maxAge: 0
@@ -48,7 +58,9 @@ describe('Max Age', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: () => new Response('HI'),
+				handler: createRouteHandler(() => {
+					return 'HI'
+				}),
 				middleware: [
 					cors({
 						maxAge: 0
