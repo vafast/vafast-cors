@@ -1,6 +1,7 @@
 {
 	"name": "@vafast/cors",
 	"version": "0.0.1",
+	"description": "CORS middleware plugin for Vafast framework",
 	"type": "module",
 	"author": {
 		"name": "Gaurish Sethia",
@@ -11,14 +12,17 @@
 		"type": "git",
 		"url": "https://github.com/gaurishhs/@vafast/cors"
 	},
-	"main": "./dist/cjs/index.js",
-	"exports": {
-		"require": "./dist/cjs/index.js",
-		"import": "./dist/index.mjs",
-		"node": "./dist/cjs/index.js",
-		"default": "./dist/index.mjs"
-	},
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"require": "./dist/index.js",
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		}
+	},
 	"bugs": "https://github.com/gaurishhs/@vafast/cors/issues",
 	"homepage": "https://github.com/gaurishhs/@vafast/cors",
 	"keywords": [
@@ -27,11 +31,27 @@
 		"cors"
 	],
 	"scripts": {
+		"clean": "rimraf dist",
+		"build": "tsup",
 		"dev": "NODE_DEBUG=* bun run --hot example/index.ts",
-		"build": "rm -rf dist && tsc --project tsconfig.dts.json",
-		"lint": "eslint . --ext .ts"
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:types": "tsc --noEmit",
+		"lint": "eslint . --ext .ts",
+		"lint:fix": "eslint . --ext .ts --fix",
+		"type-check": "tsc --noEmit",
+		"prepublishOnly": "npm run build && npm run test",
+		"release": "npm run build && npm run test && npm publish --access=public",
+		"release:patch": "npm version patch && npm run release && git push && git push --tags",
+		"release:minor": "npm version minor && npm run release && git push && git push --tags",
+		"release:major": "npm version major && npm run release && git push && git push --tags"
 	},
 	"license": "MIT",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
 	"devDependencies": {
 		"@types/bun": "^1.1.2",
 		"@types/debug": "^4.1.12",
@@ -39,8 +59,11 @@
 		"@typescript-eslint/eslint-plugin": "^7.9.0",
 		"@typescript-eslint/parser": "^7.9.0",
 		"eslint": "^9.2.0",
+		"rimraf": "^6.0.1",
+		"tsup": "^8.5.1",
+		"typescript": "^5.4.5",
 		"vafast": "^0.1.12",
-		"typescript": "^5.4.5"
+		"vitest": "^3.2.4"
 	},
 	"peerDependencies": {
 		"vafast": ">= 0.1.12"
