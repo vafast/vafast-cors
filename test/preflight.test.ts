@@ -1,4 +1,4 @@
-import { Server, createRouteHandler } from 'vafast'
+import { Server, createHandler } from 'vafast'
 import { cors } from '../src'
 
 import { describe, expect, it } from 'bun:test'
@@ -10,7 +10,7 @@ describe('Preflight', () => {
 			{
 				method: 'OPTIONS',
 				path: '/',
-				handler: createRouteHandler(() => {
+				handler: createHandler(() => {
 					return {
 						status: 204
 					}
@@ -24,7 +24,7 @@ describe('Preflight', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: createRouteHandler(() => {
+				handler: createHandler(() => {
 					return 'HI'
 				}),
 				middleware: [
@@ -44,7 +44,7 @@ describe('Preflight', () => {
 			{
 				method: 'OPTIONS',
 				path: '/nested/deep',
-				handler: createRouteHandler(() => {
+				handler: createHandler(() => {
 					return {
 						status: 204
 					}
@@ -58,7 +58,7 @@ describe('Preflight', () => {
 			{
 				method: 'GET',
 				path: '/nested/deep',
-				handler: createRouteHandler(() => {
+				handler: createHandler(() => {
 					return 'HI'
 				}),
 				middleware: [
@@ -78,7 +78,7 @@ describe('Preflight', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: createRouteHandler(() => {
+				handler: createHandler(() => {
 					return 'HI'
 				}),
 				middleware: [

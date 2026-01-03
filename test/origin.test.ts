@@ -1,4 +1,4 @@
-import { Server, createRouteHandler } from 'vafast'
+import { Server, createHandler } from 'vafast'
 import { cors } from '../src'
 
 import { describe, expect, it } from 'bun:test'
@@ -10,7 +10,7 @@ describe('Origin', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: createRouteHandler(() => {
+				handler: createHandler(() => {
 					return 'A'
 				}),
 				middleware: [
@@ -39,7 +39,7 @@ describe('Origin', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: createRouteHandler(() => {
+				handler: createHandler(() => {
 					return 'HI'
 				}),
 				middleware: [
@@ -59,7 +59,7 @@ describe('Origin', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: createRouteHandler(() => {
+				handler: createHandler(() => {
 					return 'HI'
 				}),
 				middleware: [
@@ -91,7 +91,7 @@ describe('Origin', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: createRouteHandler(() => {
+				handler: createHandler(() => {
 					return 'HI'
 				}),
 				middleware: [
@@ -117,7 +117,7 @@ describe('Origin', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: createRouteHandler(() => {
+				handler: createHandler(() => {
 					return 'A'
 				}),
 				middleware: [
@@ -146,7 +146,7 @@ describe('Origin', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: createRouteHandler(() => {
+				handler: createHandler(() => {
 					return 'HI'
 				}),
 				middleware: [
@@ -172,7 +172,7 @@ describe('Origin', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: createRouteHandler(() => {
+				handler: createHandler(() => {
 					return 'HI'
 				}),
 				middleware: [
@@ -204,7 +204,7 @@ describe('Origin', () => {
 			{
 				method: 'GET',
 				path: '/',
-				handler: createRouteHandler(() => {
+				handler: createHandler(() => {
 					return 'HI'
 				}),
 				middleware: [
