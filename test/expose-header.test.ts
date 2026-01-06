@@ -1,7 +1,7 @@
 import { Server, createHandler } from 'vafast'
 import { cors } from '../src'
 
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import { req } from './utils'
 
 describe('Expose Headers', () => {

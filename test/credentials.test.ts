@@ -1,7 +1,7 @@
 import { Server, createHandler } from 'vafast'
 import { cors } from '../src'
 
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import { req } from './utils'
 
 describe('Credentials', () => {
@@ -42,6 +42,6 @@ describe('Credentials', () => {
 		])
 
 		const res = await app.fetch(req('/'))
-		expect(res.headers.has('access-control-allow-credentials')).toBeFalse()
+		expect(res.headers.has('access-control-allow-credentials')).toBe(false)
 	})
 })

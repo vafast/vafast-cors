@@ -1,5 +1,6 @@
 /* eslint-disable no-case-declarations */
 import type { Middleware } from 'vafast'
+import { empty } from 'vafast'
 
 type Origin = string | RegExp | ((request: Request) => boolean | void)
 
@@ -316,7 +317,7 @@ export const cors = (config?: CORSConfig): Middleware => {
 	}
 
 	const handlePreflight = async (request: Request): Promise<Response> => {
-		const response = new Response(null, { status: 204 })
+		const response = empty(204)
 
 		handleOrigin(response, request)
 		handleMethod(
@@ -347,7 +348,7 @@ export const cors = (config?: CORSConfig): Middleware => {
 	return async (request: Request, next: () => Promise<Response>) => {
 		// Handle preflight requests
 		if (preflight && request.method === 'OPTIONS') {
-			const response = new Response(null, { status: 204 })
+			const response = empty(204)
 
 			handleOrigin(response, request)
 			handleMethod(

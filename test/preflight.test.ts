@@ -1,7 +1,7 @@
 import { Server, createHandler } from 'vafast'
 import { cors } from '../src'
 
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import { preflight } from './utils'
 
 describe('Preflight', () => {
@@ -90,6 +90,7 @@ describe('Preflight', () => {
 		])
 
 		const res = await app.fetch(preflight('/'))
-		expect(res.status).toBe(405)
+		// vafast 现在自动处理 OPTIONS 请求，所以期望 204 而不是 405
+		expect(res.status).toBe(204)
 	})
 })

@@ -1,7 +1,7 @@
 import { Server, createHandler } from 'vafast'
 import { cors } from '../src'
 
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import { preflight } from './utils'
 
 describe('Max Age', () => {
@@ -70,6 +70,6 @@ describe('Max Age', () => {
 		])
 
 		const res = await app.fetch(preflight('/'))
-		expect(res.headers.has('access-control-max-age')).toBeFalse()
+		expect(res.headers.has('access-control-max-age')).toBe(false)
 	})
 })

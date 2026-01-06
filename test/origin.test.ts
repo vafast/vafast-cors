@@ -1,7 +1,7 @@
 import { Server, createHandler } from 'vafast'
 import { cors } from '../src'
 
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import { req } from './utils'
 
 describe('Origin', () => {
@@ -225,7 +225,7 @@ describe('Origin', () => {
 				Origin: 'http://example.com'
 			})
 		)
-		expect(notAllowed.headers.has('access-control-allow-origin')).toBeFalse()
-		expect(pass.headers.has('access-control-allow-origin')).toBeTrue()
+		expect(notAllowed.headers.has('access-control-allow-origin')).toBe(false)
+		expect(pass.headers.has('access-control-allow-origin')).toBe(true)
 	})
 })
