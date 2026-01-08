@@ -5,7 +5,7 @@ CORS middleware plugin for [Vafast](https://github.com/vafastjs/vafast) framewor
 ## Installation
 
 ```bash
-bun add @vafast/cors
+npm install @vafast/cors
 # or
 npm install @vafast/cors
 ```
