@@ -1,4 +1,4 @@
-import { Server, createHandler } from "vafast";
+import { Server, defineRoute, defineRoutes } from "vafast";
 import { cors } from "../src";
 
 import { describe, expect, it } from "vitest";
@@ -6,16 +6,16 @@ import { req } from "./utils";
 
 describe("CORS", () => {
     it("Accept all CORS by default", async () => {
-        const app = new Server([
-            {
-                method: "GET",
-                path: "/",
-                handler: createHandler(() => {
-                    return "HI"
-                }),
-                middleware: [cors()]
-            }
-        ]);
+        const app = new Server(
+            defineRoutes([
+                defineRoute({
+                    method: "GET",
+                    path: "/",
+                    handler: () => "HI",
+                    middleware: [cors()]
+                })
+            ])
+        );
 
         const res = await app.fetch(
             req("/", {

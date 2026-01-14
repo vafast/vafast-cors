@@ -1,5 +1,5 @@
 /* eslint-disable no-case-declarations */
-import type { Middleware } from 'vafast'
+import { defineMiddleware } from 'vafast'
 import { empty } from 'vafast'
 
 type Origin = string | RegExp | ((request: Request) => boolean | void)
@@ -181,7 +181,7 @@ const processHeaders = (headers: any) => {
 	return keys
 }
 
-export const cors = (config?: CORSConfig): Middleware => {
+export const cors = (config?: CORSConfig) => {
 	let {
 		origin = true,
 		methods = true,
@@ -345,7 +345,7 @@ export const cors = (config?: CORSConfig): Middleware => {
 		return response
 	}
 
-	return async (request: Request, next: () => Promise<Response>) => {
+	return defineMiddleware(async (request, next) => {
 		// Handle preflight requests
 		if (preflight && request.method === 'OPTIONS') {
 			const response = empty(204)
@@ -398,7 +398,7 @@ export const cors = (config?: CORSConfig): Middleware => {
 		}
 
 		return response
-	}
+	})
 }
 
 export default cors

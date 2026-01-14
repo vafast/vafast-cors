@@ -1,4 +1,4 @@
-import { Server, createHandler } from 'vafast'
+import { Server, defineRoute, defineRoutes } from 'vafast'
 import { cors } from '../src'
 
 import { describe, expect, it } from 'vitest'
@@ -6,20 +6,20 @@ import { req } from './utils'
 
 describe('Origin', () => {
 	it('Accept string', async () => {
-		const app = new Server([
-			{
-				method: 'GET',
-				path: '/',
-				handler: createHandler(() => {
-					return 'A'
-				}),
-				middleware: [
-					cors({
-						origin: 'https://saltyaom.com'
-					})
-				]
-			}
-		])
+		const app = new Server(
+			defineRoutes([
+				defineRoute({
+					method: 'GET',
+					path: '/',
+					handler: () => 'A',
+					middleware: [
+						cors({
+							origin: 'https://saltyaom.com'
+						})
+					]
+				})
+			])
+		)
 
 		const res = await app.fetch(
 			new Request('http://localhost/', {
@@ -35,40 +35,40 @@ describe('Origin', () => {
 	})
 
 	it('Accept boolean', async () => {
-		const app = new Server([
-			{
-				method: 'GET',
-				path: '/',
-				handler: createHandler(() => {
-					return 'HI'
-				}),
-				middleware: [
-					cors({
-						origin: true
-					})
-				]
-			}
-		])
+		const app = new Server(
+			defineRoutes([
+				defineRoute({
+					method: 'GET',
+					path: '/',
+					handler: () => 'HI',
+					middleware: [
+						cors({
+							origin: true
+						})
+					]
+				})
+			])
+		)
 
 		const res = await app.fetch(req('/'))
 		expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*')
 	})
 
 	it('Accept RegExp', async () => {
-		const app = new Server([
-			{
-				method: 'GET',
-				path: '/',
-				handler: createHandler(() => {
-					return 'HI'
-				}),
-				middleware: [
-					cors({
-						origin: /\.com/g
-					})
-				]
-			}
-		])
+		const app = new Server(
+			defineRoutes([
+				defineRoute({
+					method: 'GET',
+					path: '/',
+					handler: () => 'HI',
+					middleware: [
+						cors({
+							origin: /\.com/g
+						})
+					]
+				})
+			])
+		)
 
 		const notAllowed = await app.fetch(
 			req('/', {
@@ -87,20 +87,20 @@ describe('Origin', () => {
 	})
 
 	it('Accept Function', async () => {
-		const app = new Server([
-			{
-				method: 'GET',
-				path: '/',
-				handler: createHandler(() => {
-					return 'HI'
-				}),
-				middleware: [
-					cors({
-						origin: () => true
-					})
-				]
-			}
-		])
+		const app = new Server(
+			defineRoutes([
+				defineRoute({
+					method: 'GET',
+					path: '/',
+					handler: () => 'HI',
+					middleware: [
+						cors({
+							origin: () => true
+						})
+					]
+				})
+			])
+		)
 
 		const res = await app.fetch(
 			req('/', {
@@ -113,20 +113,20 @@ describe('Origin', () => {
 	})
 
 	it('Accept string[]', async () => {
-		const app = new Server([
-			{
-				method: 'GET',
-				path: '/',
-				handler: createHandler(() => {
-					return 'A'
-				}),
-				middleware: [
-					cors({
-						origin: ['gehenna.sh', 'saltyaom.com']
-					})
-				]
-			}
-		])
+		const app = new Server(
+			defineRoutes([
+				defineRoute({
+					method: 'GET',
+					path: '/',
+					handler: () => 'A',
+					middleware: [
+						cors({
+							origin: ['gehenna.sh', 'saltyaom.com']
+						})
+					]
+				})
+			])
+		)
 
 		const res = await app.fetch(
 			new Request('http://localhost/', {
@@ -142,20 +142,20 @@ describe('Origin', () => {
 	})
 
 	it('Accept Function[]', async () => {
-		const app = new Server([
-			{
-				method: 'GET',
-				path: '/',
-				handler: createHandler(() => {
-					return 'HI'
-				}),
-				middleware: [
-					cors({
-						origin: ['https://demo.app', () => false, /.com/g]
-					})
-				]
-			}
-		])
+		const app = new Server(
+			defineRoutes([
+				defineRoute({
+					method: 'GET',
+					path: '/',
+					handler: () => 'HI',
+					middleware: [
+						cors({
+							origin: ['https://demo.app', () => false, /.com/g]
+						})
+					]
+				})
+			])
+		)
 
 		const res = await app.fetch(
 			req('/', {
@@ -168,20 +168,20 @@ describe('Origin', () => {
 	})
 
 	it('strictly check origin not using sub includes', async () => {
-		const app = new Server([
-			{
-				method: 'GET',
-				path: '/',
-				handler: createHandler(() => {
-					return 'HI'
-				}),
-				middleware: [
-					cors({
-						origin: 'https://example.com'
-					})
-				]
-			}
-		])
+		const app = new Server(
+			defineRoutes([
+				defineRoute({
+					method: 'GET',
+					path: '/',
+					handler: () => 'HI',
+					middleware: [
+						cors({
+							origin: 'https://example.com'
+						})
+					]
+				})
+			])
+		)
 
 		const notAllowed = await app.fetch(
 			req('/', {
@@ -200,20 +200,20 @@ describe('Origin', () => {
 	})
 
 	it('strictly check protocol', async () => {
-		const app = new Server([
-			{
-				method: 'GET',
-				path: '/',
-				handler: createHandler(() => {
-					return 'HI'
-				}),
-				middleware: [
-					cors({
-						origin: 'http://example.com'
-					})
-				]
-			}
-		])
+		const app = new Server(
+			defineRoutes([
+				defineRoute({
+					method: 'GET',
+					path: '/',
+					handler: () => 'HI',
+					middleware: [
+						cors({
+							origin: 'http://example.com'
+						})
+					]
+				})
+			])
+		)
 
 		const notAllowed = await app.fetch(
 			req('/', {

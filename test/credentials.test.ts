@@ -1,4 +1,4 @@
-import { Server, createHandler } from 'vafast'
+import { Server, defineRoute, defineRoutes } from 'vafast'
 import { cors } from '../src'
 
 import { describe, expect, it } from 'vitest'
@@ -6,40 +6,40 @@ import { req } from './utils'
 
 describe('Credentials', () => {
 	it('Allow credential', async () => {
-		const app = new Server([
-			{
-				method: 'GET',
-				path: '/',
-				handler: createHandler(() => {
-					return 'HI'
-				}),
-				middleware: [
-					cors({
-						credentials: true
-					})
-				]
-			}
-		])
+		const app = new Server(
+			defineRoutes([
+				defineRoute({
+					method: 'GET',
+					path: '/',
+					handler: () => 'HI',
+					middleware: [
+						cors({
+							credentials: true
+						})
+					]
+				})
+			])
+		)
 
 		const res = await app.fetch(req('/'))
 		expect(res.headers.get('Access-Control-Allow-Credentials')).toBe('true')
 	})
 
 	it('Disallow credential', async () => {
-		const app = new Server([
-			{
-				method: 'GET',
-				path: '/',
-				handler: createHandler(() => {
-					return 'HI'
-				}),
-				middleware: [
-					cors({
-						credentials: false
-					})
-				]
-			}
-		])
+		const app = new Server(
+			defineRoutes([
+				defineRoute({
+					method: 'GET',
+					path: '/',
+					handler: () => 'HI',
+					middleware: [
+						cors({
+							credentials: false
+						})
+					]
+				})
+			])
+		)
 
 		const res = await app.fetch(req('/'))
 		expect(res.headers.has('access-control-allow-credentials')).toBe(false)
