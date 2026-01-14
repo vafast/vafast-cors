@@ -1,6 +1,6 @@
 {
 	"name": "@vafast/cors",
-	"version": "0.0.5",
+	"version": "0.0.6",
 	"description": "CORS middleware plugin for Vafast framework",
 	"type": "module",
 	"author": {
@@ -12,14 +12,14 @@
 		"type": "git",
 		"url": "https://github.com/gaurishhs/@vafast/cors"
 	},
-	"main": "./dist/index.js",
-	"module": "./dist/index.js",
-	"types": "./dist/index.d.ts",
+	"main": "./dist/index.mjs",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.mts",
 	"exports": {
 		".": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js",
-			"default": "./dist/index.js"
+			"types": "./dist/index.d.mts",
+			"import": "./dist/index.mjs",
+			"default": "./dist/index.mjs"
 		}
 	},
 	"bugs": "https://github.com/gaurishhs/@vafast/cors/issues",
