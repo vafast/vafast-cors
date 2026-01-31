@@ -377,6 +377,10 @@ export const cors = (config?: CORSConfig) => {
 					maxAge.toString()
 				)
 
+			// 设置 credentials 头（修复 preflight 请求遗漏此头的 bug）
+			if (credentials === true)
+				response.headers.set('access-control-allow-credentials', 'true')
+
 			return response
 		}
 
