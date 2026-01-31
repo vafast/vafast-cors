@@ -89,12 +89,12 @@ interface CORSConfig {
 	 * - eg: ['GET', 'PUT', 'POST']
 	 */
 	methods?:
-		| boolean
-		| undefined
-		| null
-		| ''
-		| '*'
-		| MaybeArray<HTTPMethod | (string & {})>
+	| boolean
+	| undefined
+	| null
+	| ''
+	| '*'
+	| MaybeArray<HTTPMethod | (string & {})>
 	/**
 	 * @default `*`
 	 *
@@ -188,7 +188,7 @@ export const cors = (config?: CORSConfig) => {
 		allowedHeaders = true,
 		exposeHeaders = true,
 		credentials = true,
-		maxAge = 5,
+		maxAge,
 		preflight = true
 	} = config ?? {}
 
@@ -201,8 +201,8 @@ export const cors = (config?: CORSConfig) => {
 		typeof origin === 'boolean'
 			? undefined
 			: Array.isArray(origin)
-			? origin
-			: [origin]
+				? origin
+				: [origin]
 
 	const anyOrigin = origins?.some((o) => o === '*')
 
@@ -361,7 +361,7 @@ export const cors = (config?: CORSConfig) => {
 					response.headers.set(
 						'access-control-allow-headers',
 						request.headers.get('access-control-request-headers') ||
-							''
+						''
 					)
 
 				if (exposeHeaders === true)
