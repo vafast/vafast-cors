@@ -1,6 +1,6 @@
 {
 	"name": "@vafast/cors",
-	"version": "0.0.8",
+	"version": "0.0.9",
 	"description": "CORS middleware plugin for Vafast framework",
 	"type": "module",
 	"author": {
