@@ -1,6 +1,5 @@
 /* eslint-disable no-case-declarations */
-import { defineMiddleware } from 'vafast'
-import { empty } from 'vafast'
+import { defineMiddleware, json, empty } from 'vafast'
 
 type Origin = string | RegExp | ((request: Request) => boolean | void)
 
@@ -385,23 +384,32 @@ export const cors = (config?: CORSConfig) => {
 		}
 
 		// Process CORS for actual requests
-		const response = await next()
+		try {
+			const response = await next()
 
-		handleOrigin(response, request)
-		handleMethod(response, request.method)
-		setDefaultHeaders(response)
+			handleOrigin(response, request)
+			handleMethod(response, request.method)
+			setDefaultHeaders(response)
 
-		if (allowedHeaders === true || exposeHeaders === true) {
-			const headers = processHeaders(request.headers)
+			if (allowedHeaders === true || exposeHeaders === true) {
+				const headers = processHeaders(request.headers)
 
-			if (allowedHeaders === true)
-				response.headers.set('access-control-allow-headers', headers)
+				if (allowedHeaders === true)
+					response.headers.set('access-control-allow-headers', headers)
 
-			if (exposeHeaders === true)
-				response.headers.set('access-control-expose-headers', headers)
+				if (exposeHeaders === true)
+					response.headers.set('access-control-expose-headers', headers)
+			}
+
+			return response
+		} catch (error) {
+			// 即使内部中间件出错，也要返回带 CORS 头的错误响应
+			// 这样浏览器能看到真正的错误，而不是 CORS 错误
+			const errorResponse = json({ code: 500, message: 'Internal Server Error' }, 500)
+			handleOrigin(errorResponse, request)
+			setDefaultHeaders(errorResponse)
+			return errorResponse
 		}
-
-		return response
 	})
 }
 
