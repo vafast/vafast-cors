@@ -1,27 +1,31 @@
-import { Server } from 'tirne'
+import { Server, defineRoutes } from 'vafast'
 import { cors } from '../src/index'
 
-const app = new Server([
-	{
-		method: 'POST',
-		path: '/',
-		handler: ({ body }) => new Response(body),
-		middleware: [
-			cors({
-				origin: 'http://example.com'
-			})
-		]
-	}
-])
+const app = new Server(
+  defineRoutes([
+    {
+      method: 'POST',
+      path: '/',
+      handler: ({ body }) => new Response(String(body)),
+      middleware: [
+        cors({
+          origin: 'http://example.com',
+        }),
+      ],
+    },
+  ]),
+)
 
 app.fetch(
-	new Request('http://localhost/awd', {
-		headers: {
-			origin: 'https://example.com',
-			a: 'b',
-			c: 'd'
-		}
-	})
+  new Request('http://localhost/', {
+    method: 'POST',
+    headers: {
+      origin: 'https://example.com',
+      a: 'b',
+      c: 'd',
+    },
+    body: 'hello',
+  }),
 )
-	.then((x) => x.headers)
-	.then(console.log)
+  .then(res => res.headers)
+  .then(console.log)
