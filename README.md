@@ -1,144 +1,77 @@
 # @vafast/cors
 
-CORS middleware plugin for [Vafast](https://github.com/vafastjs/vafast) framework.
+Vafast 的 [CORS](https://developer.mozilla.org/docs/Web/HTTP/CORS) 中间件：为响应补充跨域头，并默认自动处理 `OPTIONS` 预检（返回 `204`）。
 
-## Installation
+默认较宽松（任意 Origin、反射方法/头、`credentials: true`），生产请收紧白名单。
+
+## 安装
 
 ```bash
 npm install @vafast/cors
-# or
-npm install @vafast/cors
 ```
 
-## Example
+## 快速开始
 
 ```typescript
-import { Server, createHandler } from 'vafast'
+import { Server, defineRoute, defineRoutes, json, serve } from 'vafast'
 import { cors } from '@vafast/cors'
 
-const server = new Server([
-  {
+const routes = defineRoutes([
+  defineRoute({
     method: 'GET',
     path: '/',
-    handler: createHandler(() => 'Hello World'),
-    middleware: [cors()]
-  }
+    handler: () => json({ ok: true }),
+  }),
 ])
 
-export default {
-  fetch: (req: Request) => server.fetch(req)
-}
+const server = new Server(routes)
+server.use(cors())
+serve({ fetch: server.fetch, port: 3000 })
 ```
 
-## Configuration
+### `origin: true`（默认）行为
 
-### origin
+设置 `Vary: *`；`Access-Control-Allow-Origin` 为请求的 `Origin`，若无 `Origin` 则为 `*`。
 
-@default `true`
+这样可与默认 `credentials: true` 兼容——浏览器规定：**带凭证时 ACAO 不能是 `*`**，必须是具体源。
 
-Assign the **Access-Control-Allow-Origin** header.
+生产请改为白名单：
 
-Value can be one of the following:
-- `string` - String of origin which will directly assign to `Access-Control-Allow-Origin`
+```typescript
+server.use(
+  cors({
+    origin: ['https://example.com', 'https://app.example.com'],
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+    maxAge: 600,
+  }),
+)
+```
 
-- `boolean` - If set to true, `Access-Control-Allow-Origin` will be set to the request origin (accept all origin)
+## 选项
 
-- `RegExp` - Pattern to use to test with request's url, will accept origin if matched.
+| 选项 | 类型 | 默认 | 说明 |
+|------|------|------|------|
+| `origin` | `boolean \| string \| RegExp \| ((req) => boolean \| void) \| 数组` | `true` | 见下方 origin 模式；函数须**显式返回 `true`** 才放行 |
+| `methods` | `boolean \| null \| '' \| '*' \| 方法 \| 字符串 \| 数组` | `true` | `true` 时镜像预检/当前方法；`false`/空则不写该头 |
+| `allowedHeaders` | `true \| string \| string[]` | `true` | `true` 时预检镜像 `Access-Control-Request-Headers` |
+| `exposeHeaders` | `true \| string \| string[]` | `true` | 前端 JS 可读的响应头；`true` 时取请求头名列表 |
+| `credentials` | `boolean` | `true` | 写 `Access-Control-Allow-Credentials: true`（预检与实际请求都会） |
+| `maxAge` | `number` | — | 预检缓存秒数；**未传不写头**（JSDoc 曾写默认 `5`，源码无默认） |
+| `preflight` | `boolean` | `true` | 拦截全部 `OPTIONS`，直接 `204` + CORS 头，不进入后续路由 |
 
-- `Function` - Custom logic to validate origin acceptance or not. will accept origin if `true` is returned.
-    ```typescript
-    // Example usage
-    cors({
-        origin: (request: Request) => {
-            const origin = request.headers.get('Origin')
-            return origin === 'https://example.com'
-        }
-    })
-    ```
+### `origin` 模式速查
 
-- `Array<string | RegExp | Function>` - Will try to find truthy value of all options above. Will accept Request if one is `true`.
+| 值 | 行为 |
+|----|------|
+| `true` | 回显请求 `Origin`（无则 `*`）+ `Vary: *` |
+| 字符串 / 字符串数组 | 匹配则回显该 `Origin`（也支持去协议后的 host 比较） |
+| `'*'`（在列表中） | ACAO 固定 `*`；**勿与 credentials 同时依赖** |
+| `RegExp` | 对 `Origin` 做 `test` |
+| 函数 | 返回严格 `true` 才放行 |
+| 混合数组 | 任一规则命中即放行 |
 
-### methods
+## 文档
 
-@default `true`
-
-Assign **Access-Control-Allow-Methods** header. 
-
-Value can be one of the following:
-- `undefined | null | ''` - Ignore all methods.
-
-- `true` - Mirror the request method.
-
-- `*` - Accept all methods.
-
-- `HTTPMethod` - Will be directly set to **Access-Control-Allow-Methods**.
-    - Expects either a single method or a comma-delimited string (eg: 'GET, PUT, POST')
-
-- `HTTPMethod[]` - Allow multiple HTTP methods.
-    - eg: ['GET', 'PUT', 'POST']
-
-### allowedHeaders
-
-@default `true`
-
-Assign **Access-Control-Allow-Headers** header. 
-
-Allow incoming request with the specified headers.
-
-Value can be one of the following:
-- `true` - Mirror the request headers.
-
-- `string`
-    - Expects either a single header or a comma-delimited string (eg: 'Content-Type, Authorization').
-
-- `string[]` - Allow multiple headers.
-    - eg: ['Content-Type', 'Authorization']
-
-### exposeHeaders
-
-@default `true`
-
-Assign **Access-Control-Exposed-Headers** header. 
-
-Return the specified headers to request in CORS mode.
-
-Value can be one of the following:
-- `true` - Mirror the request headers.
-
-- `string`
-    - Expects either a single header or a comma-delimited string (eg: 'Content-Type, X-Powered-By').
-
-- `string[]` - Allow multiple headers.
-    - eg: ['Content-Type', 'X-Powered-By']
-
-### credentials
-
-@default `true`
-
-Assign **Access-Control-Allow-Credentials** header. 
-
-Allow incoming requests to send `credentials` header.
-
-- `boolean` - Available if set to `true`.
-
-### maxAge
-
-@default `5`
-
-Assign **Access-Control-Max-Age** header. 
-
-Duration in seconds to indicates how long the results of a preflight request can be cached.
-
-- `number` - Duration in seconds.
-
-### preflight
-
-@default `true`
-
-Automatically handle OPTIONS preflight requests which response with `HTTP 204` and CORS headers.
-
-- `boolean` - Available if set to `true`.
-
-## License
-
-MIT
+预检、credentials 与 `*` 冲突等完整说明见站点文档：[CORS 中间件](https://vafast.huyooo.com/middleware/cors.html)（仓库内 `vafast-doc/docs/middleware/cors.md`）。
